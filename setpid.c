@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <getopt.h>
 
-static const char *setpid_version_string = "0.0.4";
+static const char *setpid_version_string = "0.0.5";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -72,16 +72,21 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "setpid error: pid missing, use -p/--pid\n");
 			exit(0);
 		}
+		unsigned int cnt = 0;
 		pid_t current_pid = getpid();
 		if (current_pid > pid) {
 			while (1) {
 				current_pid = fork();
-				if (current_pid == -1)
+				if (current_pid == -1) {
+					if (debug)
+						printf("#%u pid == -1\n", cnt++);
 					break;
+				}
 				else if (current_pid != 0)
 					kill(current_pid, SIGTERM);
 
-				printf("pid: %d\n", current_pid);
+				if (debug)
+					printf("#%u pid: %d\n", cnt++, current_pid);
 
 				if (current_pid < pid)
 					break;
@@ -89,12 +94,17 @@ int main(int argc, char **argv) {
 		}
 		while (1) {
 			current_pid = fork();
-			if (current_pid == -1)
+			if (current_pid == -1) {
+				if (debug)
+					printf("#%u pid2 == -1\n", cnt++);
 				break;
+			}
 			else if (current_pid != 0)
 				kill(current_pid, SIGKILL);
 
-			printf("pid2: %d\n", current_pid);
+			if (debug)
+				printf("#%u pid2: %d\n", cnt++, current_pid);
+
 			if (current_pid >= pid-1) {
 				system(command);
 				break;
@@ -108,7 +118,7 @@ int main(int argc, char **argv) {
 	unsigned int cnt;
 	for (cnt = 1; cnt < count; cnt++) {
 		pid_t pid = fork();
-		usleep(50000);
+//		usleep(50000);
 		if (pid == -1) {
 			fprintf(stderr, "#%u setpid error: Cannot fork(): %s\n", cnt, strerror(errno));
 		}
