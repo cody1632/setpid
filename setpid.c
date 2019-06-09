@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <getopt.h>
 
-static const char *setpid_version_string = "0.0.3";
+static const char *setpid_version_string = "0.0.4";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -49,8 +49,8 @@ int main(int argc, char **argv) {
 			printf("setpid %s\n", setpid_version_string);
 			exit(0);
 		case 'C':
-			command = (char *)malloc(strlen(optarg)+1);
-			sprintf(command, "%s", optarg);
+			command = (char *)malloc(strlen(optarg)+1+2);
+			sprintf(command, "%s &", optarg);
 			break;
 		case 'c':
 			count = atoi(optarg);
@@ -72,18 +72,20 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "setpid error: pid missing, use -p/--pid\n");
 			exit(0);
 		}
-		pid_t current_pid;
-		while (1) {
-			current_pid = fork();
-			if (current_pid == -1)
-				break;
-			else if (current_pid != 0)
-				kill(current_pid, SIGTERM);
+		pid_t current_pid = getpid();
+		if (current_pid > pid) {
+			while (1) {
+				current_pid = fork();
+				if (current_pid == -1)
+					break;
+				else if (current_pid != 0)
+					kill(current_pid, SIGTERM);
 
-			printf("pid: %d\n", current_pid);
+				printf("pid: %d\n", current_pid);
 
-			if (current_pid < pid)
-				break;
+				if (current_pid < pid)
+					break;
+			}
 		}
 		while (1) {
 			current_pid = fork();
@@ -104,7 +106,7 @@ int main(int argc, char **argv) {
 	if (debug)
 		printf("#0: %d\n", getpid());
 	unsigned int cnt;
-	for (cnt = 0; cnt < count; cnt++) {
+	for (cnt = 1; cnt < count; cnt++) {
 		pid_t pid = fork();
 		usleep(50000);
 		if (pid == -1) {
