@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <getopt.h>
 
-static const char *setpid_version_string = "0.0.6";
+static const char *setpid_version_string = "0.0.7";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -66,11 +66,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (command) {
-		if (!pid) {
-			fprintf(stderr, "setpid error: pid missing, use -p/--pid\n");
-			exit(0);
-		}
+	if (pid) {
 		unsigned int cnt = 0;
 		pid_t current_pid = getpid();
 		if (current_pid > pid) {
@@ -112,16 +108,17 @@ int main(int argc, char **argv) {
 		}
 		exit(0);
 	}
-
-	pid_t pid = getpid();
-	if (debug)
-		printf("#0: %d\n", pid);
-	unsigned int cnt;
-	for (cnt = 1; cnt < count; cnt++) {
+	else {
+		pid_t pid = getpid();
 		if (debug)
-			system("echo \"pid:$$\"");
-		else
-			system("true");
+			printf("#0: %d\n", pid);
+		unsigned int cnt;
+		for (cnt = 1; cnt < count; cnt++) {
+			if (debug)
+				system("echo \"pid:$$\"");
+			else
+				system("true");
+		}
 	}
 
 	return 0;
