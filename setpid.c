@@ -8,7 +8,7 @@
 #include <getopt.h>
 #include <pthread.h>
 
-static const char *setpid_version_string = "0.0.14";
+static const char *setpid_version_string = "0.0.15";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -36,34 +36,11 @@ void ShowHelp(void) {
 		"\t-v, --verbose\n");
 }
 
-void *thr_func(void *ptr) {
-	while (1) {
-		if (verbose) {
-			sprintf(cmdstr, "echo \"#%u: $$\"", cnt);
-			if (system(cmdstr) == 2)
-				exit(0);
-		}
-		else {
-			if (system("true") == 2)
-				exit(0);
-		}
-	}
-	return NULL;
-}
-
 int main(int argc, char **argv) {
 	if (argc <= 1) {
 		ShowHelp();
 		return EINVAL;
 	}
-
-	pthread_t thr;
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&thr, &attr, thr_func, NULL);
-	pthread_detach(thr);
-	pthread_attr_destroy(&attr);
 
 	int c;
 	while (1) {
