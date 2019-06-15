@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <getopt.h>
 
-static const char *setpid_version_string = "0.0.11";
+static const char *setpid_version_string = "0.0.12";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -35,11 +35,20 @@ void ShowHelp(void) {
 		"\t-v, --verbose\n");
 }
 
+void signal_handler(int signum) {
+	if (verbose)
+		printf("signum: %d\n", signum);
+	if (signum == SIGINT)
+		exit(0);
+}
+
 int main(int argc, char **argv) {
 	if (argc <= 1) {
 		ShowHelp();
 		return EINVAL;
 	}
+
+	signal(SIGINT, signal_handler);
 	
 	int c;
 	while (1) {
