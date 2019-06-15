@@ -1,3 +1,14 @@
 setpid is a Linux terminal program which starts a command with the specified pid.
+The program can also trigger pids for the specified count.
 
-The code is in alpha stage and is quite buggy... a work in progress
+setpid options:
+        -h, --help
+        -V, --version
+        -C, --command "COMMAND opts"
+        -c, --count NUM
+        -p, --pid
+        -v, --verbose
+
+Notes:
+The -p/--pid option is buggy and can only spawn ~800-900 pids on my system.
+
