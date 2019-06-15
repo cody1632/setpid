@@ -6,8 +6,9 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <getopt.h>
+#include <pthread.h>
 
-static const char *setpid_version_string = "0.0.13";
+static const char *setpid_version_string = "0.0.14";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -20,9 +21,9 @@ static const struct option long_options[] = {
 };
 static const char *short_options = "hVC:c:p:v";
 
-unsigned int count = 100;
+unsigned int cnt, count = 100;
 unsigned int verbose;
-char *command;
+char *command, cmdstr[64];
 pid_t pid;
 
 void ShowHelp(void) {
@@ -35,11 +36,34 @@ void ShowHelp(void) {
 		"\t-v, --verbose\n");
 }
 
+void *thr_func(void *ptr) {
+	while (1) {
+		if (verbose) {
+			sprintf(cmdstr, "echo \"#%u: $$\"", cnt);
+			if (system(cmdstr) == 2)
+				exit(0);
+		}
+		else {
+			if (system("true") == 2)
+				exit(0);
+		}
+	}
+	return NULL;
+}
+
 int main(int argc, char **argv) {
 	if (argc <= 1) {
 		ShowHelp();
 		return EINVAL;
 	}
+
+	pthread_t thr;
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_create(&thr, &attr, thr_func, NULL);
+	pthread_detach(thr);
+	pthread_attr_destroy(&attr);
 
 	int c;
 	while (1) {
@@ -72,7 +96,6 @@ int main(int argc, char **argv) {
 	}
 
 	if (pid) {
-		unsigned int cnt = 0;
 		pid_t current_pid = getpid();
 		if (current_pid > pid) {
 			while (1) {
@@ -118,8 +141,6 @@ int main(int argc, char **argv) {
 		pid_t pid = getpid();
 		if (verbose)
 			printf("#1: %d\n", pid);
-		char cmdstr[64];
-		unsigned int cnt;
 		for (cnt = 1; cnt <= count; cnt++) {
 			if (verbose) {
 				sprintf(cmdstr, "echo \"#%u: $$\"", cnt);
