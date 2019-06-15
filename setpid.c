@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <getopt.h>
 
-static const char *setpid_version_string = "0.0.10";
+static const char *setpid_version_string = "0.0.11";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -36,6 +36,11 @@ void ShowHelp(void) {
 }
 
 int main(int argc, char **argv) {
+	if (argc <= 1) {
+		ShowHelp();
+		return EINVAL;
+	}
+	
 	int c;
 	while (1) {
 		c = getopt_long(argc, argv, short_options, long_options, NULL);
