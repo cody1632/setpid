@@ -11,6 +11,6 @@ setpid options:
 
 Notes:
 The -p/--pid option is buggy and can only spawn ~800-900 pids on my system.
-There's a faster way to obtain the same result using bash:
+The -s/--shell option is the fastest way to obtain the same result using bash:
 	time for i in `seq 1 1000`; do echo "#$i: $$"; done
 finishes in 0.016s while setpid executes 1000 pids in 4.6s
