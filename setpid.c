@@ -7,21 +7,21 @@
 #include <sys/types.h>
 #include <getopt.h>
 
-static const char *setpid_version_string = "0.0.8";
+static const char *setpid_version_string = "0.0.9";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'V'},
 	{"command", required_argument, NULL, 'C'},
 	{"count", required_argument, NULL, 'c'},
-	{"debug", no_argument, NULL, 'D'},
 	{"pid", required_argument, NULL, 'p'},
+	{"verbose", no_argument, NULL, 'v'},
 	{NULL, 0, NULL, 0}
 };
-static const char *short_options = "hVC:c:Dp:";
+static const char *short_options = "hVC:c:p:v";
 
 unsigned int count = 100;
-unsigned int debug;
+unsigned int verbose;
 char *command;
 pid_t pid;
 
@@ -31,8 +31,8 @@ void ShowHelp(void) {
 		"\t-V, --version\n"
 		"\t-C, --command \"COMMAND\"\n"
 		"\t-c, --count NUM\n"
-		"\t-D, --debug\n"
-		"\t-p, --pid\n");
+		"\t-p, --pid\n"
+		"\t-v, --verbose\n");
 }
 
 int main(int argc, char **argv) {
@@ -54,11 +54,11 @@ int main(int argc, char **argv) {
 		case 'c':
 			count = atoi(optarg);
 			break;
-		case 'D':
-			debug = 1;
-			break;
 		case 'p':
 			pid = (pid_t)atoi(optarg);
+			break;
+		case 'v':
+			verbose = 1;
 			break;
 		default:
 			fprintf(stderr, "setpid error: Unknown option: %d<%c>\n", c, (char)c);
@@ -73,14 +73,14 @@ int main(int argc, char **argv) {
 			while (1) {
 				current_pid = fork();
 				if (current_pid == -1) {
-					if (debug)
+					if (verbose)
 						printf("#%u pid == -1\n", cnt++);
-					break;
+					exit(1);
 				}
 				else if (current_pid != 0)
 					kill(current_pid, SIGTERM);
 
-				if (debug)
+				if (verbose)
 					printf("#%u pid: %d\n", cnt++, current_pid);
 
 				if (current_pid < pid)
@@ -90,14 +90,14 @@ int main(int argc, char **argv) {
 		while (1) {
 			current_pid = fork();
 			if (current_pid == -1) {
-				if (debug)
+				if (verbose)
 					printf("#%u pid2 == -1\n", cnt++);
-				break;
+				exit(1);
 			}
 			else if (current_pid != 0)
 				kill(current_pid, SIGKILL);
 
-			if (debug)
+			if (verbose)
 				printf("#%u pid2: %d\n", cnt++, current_pid);
 
 			if (current_pid >= pid-1) {
@@ -110,15 +110,18 @@ int main(int argc, char **argv) {
 	}
 	else {
 		pid_t pid = getpid();
-		if (debug)
-			printf("#0: %d\n", pid);
+		if (verbose)
+			printf("#1: %d\n", pid);
+		char cmdstr[64];
 		unsigned int cnt;
-		for (cnt = 1; cnt < count; cnt++) {
-			if (debug) {
+		for (cnt = 1; cnt <= count; cnt++) {
+			if (verbose) {
 				if (command)
 					system(command);
-				else
-					system("echo \"pid:$$\"");
+				else {
+					sprintf(cmdstr, "echo \"#%u: $$\"", cnt);
+					system(cmdstr);
+				}
 			}
 			else
 				if (command)
