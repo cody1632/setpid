@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <getopt.h>
 
-static const char *setpid_version_string = "0.0.7";
+static const char *setpid_version_string = "0.0.8";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -114,10 +114,17 @@ int main(int argc, char **argv) {
 			printf("#0: %d\n", pid);
 		unsigned int cnt;
 		for (cnt = 1; cnt < count; cnt++) {
-			if (debug)
-				system("echo \"pid:$$\"");
+			if (debug) {
+				if (command)
+					system(command);
+				else
+					system("echo \"pid:$$\"");
+			}
 			else
-				system("true");
+				if (command)
+					system(command);
+				else
+					system("true");
 		}
 	}
 
