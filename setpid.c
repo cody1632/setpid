@@ -8,7 +8,7 @@
 #include <getopt.h>
 #include <pthread.h>
 
-static const char *setpid_version_string = "0.0.15";
+static const char *setpid_version_string = "0.0.16";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -16,13 +16,15 @@ static const struct option long_options[] = {
 	{"command", required_argument, NULL, 'C'},
 	{"count", required_argument, NULL, 'c'},
 	{"pid", required_argument, NULL, 'p'},
+	{"shell", no_argument, NULL, 's'},
 	{"verbose", no_argument, NULL, 'v'},
 	{NULL, 0, NULL, 0}
 };
-static const char *short_options = "hVC:c:p:v";
+static const char *short_options = "hVC:c:p:sv";
 
 unsigned int cnt, count = 100;
 unsigned int verbose;
+unsigned int use_shell;
 char *command, cmdstr[64];
 pid_t pid;
 
@@ -33,6 +35,7 @@ void ShowHelp(void) {
 		"\t-C, --command \"COMMAND\"\n"
 		"\t-c, --count NUM\n"
 		"\t-p, --pid\n"
+		"\t-s, --shell\n"
 		"\t-v, --verbose\n");
 }
 
@@ -63,6 +66,9 @@ int main(int argc, char **argv) {
 		case 'p':
 			pid = (pid_t)atoi(optarg);
 			break;
+		case 's':
+			use_shell = 1;
+			break;
 		case 'v':
 			verbose = 1;
 			break;
@@ -70,6 +76,16 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "setpid error: Unknown option: %d<%c>\n", c, (char)c);
 			break;
 		}
+	}
+
+	if (use_shell) {
+		if (verbose)
+			sprintf(cmdstr, "for i in `seq 1 %u`; do echo \"#$i: $$\"; done", count);
+		else
+			sprintf(cmdstr, "for i in `seq 1 %u`; do true; done", count);
+		if (system(cmdstr) == 2)
+			exit(0);
+		exit(0);
 	}
 
 	if (pid) {
