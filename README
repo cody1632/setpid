@@ -1,6 +1,13 @@
 setpid is a Linux terminal program which starts a command with the specified pid.
 The program can also trigger pids for the specified count.
 
+Important: This program is deprecated as of now, since a bigger PID range has
+been introduced recently. 32bit systems had 32768 max, and now systems have
+4194304, so it can take a while before making a round. Alternatively you can
+set /proc/sys/kernel/pid_max to what you want, or set kernel.pid_max in
+/etc/sysctl.conf and run 'sysctl -p'. Oh and also there can be PID
+randomization setup on your system.
+
 setpid options:
         -h, --help
         -V, --version
