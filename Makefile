@@ -1,5 +1,5 @@
 
-CFLAGS = -std=c11 -Wall -Werror -march=native -O2 -D_GNU_SOURCE
+CFLAGS = -std=c11 -Wall -O2 -D_GNU_SOURCE
 PROGNAME = setpid
 
 default: all
